@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0f" id="metaThemeColor" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="description" content="Watch anime online free — sub and dub in HD." />
+  <title>ANIMEWATCH — Stream Anime Online</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="announcement-banner" id="announcementBanner" data-id="4" style="display:none">
+    <i class="fas fa-bell"></i>
+    <span>🎉 Major update: Miniplayer, Settings, Seasons, Watch Party & more!</span>
+    <button class="announcement-close" id="announcementClose"><i class="fas fa-times"></i></button>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <div class="anime-modal" id="animeModal" style="display:none"></div>
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="header" id="header">
+    <div class="header-container">
+      <div class="brand" onclick="navigateToPage('home')">
+        <span class="brand-logo">AW</span>
+        <h1>ANIME<span>WATCH</span></h1>
+      </div>
+
+      <nav class="nav" id="mainNav">
+        <a href="#home"      class="nav-link active" data-page="home">     <i class="fas fa-home"></i>    <span>Home</span></a>
+        <a href="#series"    class="nav-link"         data-page="series">   <i class="fas fa-tv"></i>      <span>Series</span></a>
+        <a href="#movies"    class="nav-link"         data-page="movies">   <i class="fas fa-film"></i>    <span>Movies</span></a>
+        <a href="#filter"    class="nav-link"         data-page="filter">   <i class="fas fa-filter"></i>  <span>Filter</span></a>
+        <a href="#mylist"    class="nav-link"         data-page="mylist">   <i class="fas fa-heart"></i>   <span>My List</span></a>
+        <a href="#history"   class="nav-link"         data-page="history">  <i class="fas fa-history"></i> <span>History</span></a>
+        <a href="#settings"  class="nav-link"         data-page="settings"> <i class="fas fa-cog"></i>     <span>Settings</span></a>
+        <a href="#developer" class="nav-link"         data-page="developer"><i class="fas fa-code"></i>    <span>Dev</span></a>
+      </nav>
+
+      <div class="header-right">
+        <!-- Notification Bell -->
+        <div class="bell-section" id="bellSection" style="display:none">
+          <button class="bell-btn" id="bellBtn" onclick="toggleBellDropdown()" title="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="bell-badge" id="bellBadge" style="display:none">0</span>
+          </button>
+          <div class="bell-dropdown" id="bellDropdown">
+            <div class="bell-header">
+              <span><i class="fas fa-bell"></i> Notifications</span>
+              <div style="display:flex;gap:8px">
+                <button class="bell-action-btn" onclick="markAllReadAnimated()">Mark all read</button>
+                <button class="bell-action-btn" onclick="clearNotifications();renderBellDropdown()">Clear all</button>
+              </div>
+            </div>
+            <div class="bell-list" id="bellList"></div>
+          </div>
+        </div>
+        <button class="random-btn" onclick="watchRandomAnime()" title="Random Anime (R)">
+          <i class="fas fa-dice"></i>
+        </button>
+        <button class="theme-toggle" id="themeToggle" title="Cycle theme">
+          <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+        <div class="profile-section">
+          <button class="profile-btn" id="profileBtn">
+            <div class="profile-avatar" id="profileAvatar">?</div>
+            <span id="profileText">Login</span>
+            <i class="fas fa-chevron-down" id="profileChevron"></i>
+          </button>
+          <div class="profile-dropdown" id="profileDropdown">
+            <div class="dropdown-user" id="dropdownUser"></div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item" onclick="navigateToPage('profile');document.getElementById('profileDropdown').classList.remove('show')"><i class="fas fa-user"></i> My Profile</div>
+            <div class="dropdown-item" onclick="navigateToPage('mylist');document.getElementById('profileDropdown').classList.remove('show')"><i class="fas fa-heart"></i> My List</div>
+            <div class="dropdown-item" onclick="navigateToPage('history');document.getElementById('profileDropdown').classList.remove('show')"><i class="fas fa-history"></i> Watch History</div>
+            <div class="dropdown-item" onclick="navigateToPage('settings');document.getElementById('profileDropdown').classList.remove('show')"><i class="fas fa-cog"></i> Settings</div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</div>
+          </div>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+  <!-- ═══ HOME ═══ -->
+  <div class="page" id="page-home">
+
+    <!-- Anime Quote of the Day -->
+    <div class="anime-quote-bar" id="animeQuoteBar" style="display:none"></div>
+
+    <!-- Daily Challenge -->
+    <div class="daily-challenge-bar" id="dailyChallengeBar" style="display:none"></div>
+
+    <!-- ═══ HERO: AnimeKai-style full-bleed ═══ -->
+    <section class="hero-v2" id="heroV2">
+
+      <!-- Full-bleed background art -->
+      <div class="hero-v2-bg" id="heroV2Bg">
+        <img src="" alt="" id="heroV2BgImg" />
+        <div class="hero-v2-bg-overlay"></div>
+      </div>
+
+      <div class="hero-v2-container hero-v2-single">
+        <div class="hero-v2-left">
+
+          <!-- Type + sub/dub badges -->
+          <div class="hero-v2-badges">
+            <span class="hero-v2-badge-type" id="heroV2Type">TV</span>
+            <span class="hero-v2-badge-sub" id="heroV2SubBadge"><i class="fas fa-closed-captioning"></i> SUB</span>
+            <span class="hero-v2-badge-dub" id="heroV2DubBadge" style="display:none"><i class="fas fa-volume-up"></i> DUB</span>
+          </div>
+
+          <!-- Title -->
+          <h2 class="hero-v2-title" id="heroV2Title">Anime Title</h2>
+
+          <!-- Genres -->
+          <p class="hero-v2-genres" id="heroV2Genres"></p>
+
+          <!-- Synopsis -->
+          <p class="hero-v2-synopsis" id="heroV2Synopsis"></p>
+
+          <!-- Meta: Rating · Release · Quality -->
+          <div class="hero-v2-meta-row">
+            <div class="hero-v2-meta-box">
+              <span class="hero-v2-meta-label">Rating</span>
+              <span class="hero-v2-meta-val" id="heroV2Rating">—</span>
+            </div>
+            <div class="hero-v2-meta-box">
+              <span class="hero-v2-meta-label">Release</span>
+              <span class="hero-v2-meta-val" id="heroV2Release">—</span>
+            </div>
+            <div class="hero-v2-meta-box">
+              <span class="hero-v2-meta-label">Quality</span>
+              <span class="hero-v2-meta-val">HD</span>
+            </div>
+          </div>
+
+          <!-- Watch + Bookmark -->
+          <div class="hero-v2-actions">
+            <button class="hero-v2-watch-btn" id="heroV2WatchBtn">
+              <i class="fas fa-play"></i> Watch Now
+            </button>
+            <button class="hero-v2-save-btn" id="heroV2SaveBtn" title="Add to My List">
+              <i class="far fa-bookmark"></i>
+            </button>
+          </div>
+
+          <!-- Search bar -->
+          <div class="search-bar hero-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search anime, genres..." id="searchInput" autocomplete="off" />
+            <button class="voice-search-btn" id="voiceSearchBtn" onclick="startVoiceSearch()" title="Voice search">
+              <i class="fas fa-microphone"></i>
+            </button>
+            <div class="search-results" id="searchResults"></div>
+          </div>
+
+          <!-- Slide nav: prev · counter · dots · next -->
+          <div class="hero-v2-slide-nav">
+            <button class="hero-v2-slide-btn" id="slidePrev" title="Previous">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="hero-v2-slide-counter">
+              <span id="heroV2SlideNum">1</span> / <span id="heroV2SlideTotal">8</span>
+            </span>
+            <div class="slideshow-dots" id="slideshowDots"></div>
+            <button class="hero-v2-slide-btn" id="slideNext" title="Next">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Compat shims (hidden) -->
+      <div style="display:none">
+        <div id="featuredCard">
+          <img id="featuredImage" alt="" />
+          <div id="featuredTitle"></div>
+          <div id="featuredGenres"></div>
+          <div id="featuredMeta"></div>
+          <button id="featuredWatchBtn"></button>
+          <button id="featuredInfoBtn"></button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Genre quick-tags below hero -->
+    <div class="genre-tag-bar">
+      <div class="genre-tag-inner">
+        <span class="genre-tag-item active" onclick="filterByGenre(null)">All</span>
+        <span class="genre-tag-item" onclick="filterByGenre('Action')">Action</span>
+        <span class="genre-tag-item" onclick="filterByGenre('Romance')">Romance</span>
+        <span class="genre-tag-item" onclick="filterByGenre('Fantasy')">Fantasy</span>
+        <span class="genre-tag-item" onclick="filterByGenre('Isekai')">Isekai</span>
+        <span class="genre-tag-item" onclick="filterByGenre('Thriller')">Thriller</span>
+        <span class="genre-tag-item" onclick="filterByGenre('Drama')">Drama</span>
+        <span class="genre-tag-item" onclick="filterByGenre('Comedy')">Comedy</span>
+        <span class="genre-tag-item" onclick="filterByGenre('Sci-Fi')">Sci-Fi</span>
+        <span class="genre-tag-item" onclick="navigateToPage('filter')"><i class="fas fa-sliders-h"></i> More</span>
+      </div>
+    </div>
+
+    <section class="content-section home-section" id="continueWatchingSection" style="display:none">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-icon" style="background:var(--teal)"><i class="fas fa-play"></i></span>
+          <div>
+            <h2 class="section-title">Continue Watching</h2>
+            <p class="section-sub">Pick up where you left off</p>
+          </div>
+        </div>
+      </div>
+      <div class="anime-carousel" id="continueWatching"></div>
+    </section>
+
+    <!-- New Episodes -->
+    <section class="content-section home-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-icon" style="background:var(--accent)"><i class="fas fa-bolt"></i></span>
+          <div>
+            <h2 class="section-title">New Episodes</h2>
+            <p class="section-sub">Latest additions to the library</p>
+          </div>
+        </div>
+        <a class="see-all" onclick="navigateToPage('series')">See all <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="anime-carousel" id="latestEpisodes"></div>
+    </section>
+
+    <!-- Popular Series -->
+    <section class="content-section home-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-icon" style="background:var(--teal)"><i class="fas fa-fire"></i></span>
+          <div>
+            <h2 class="section-title">Popular Series</h2>
+            <p class="section-sub">Most-watched TV anime</p>
+          </div>
+        </div>
+        <a class="see-all" onclick="navigateToPage('series')">See all <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="anime-carousel" id="popularSeries"></div>
+    </section>
+
+    <!-- Top Movies -->
+    <section class="content-section home-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-icon" style="background:var(--gold)"><i class="fas fa-film"></i></span>
+          <div>
+            <h2 class="section-title">Top Movies</h2>
+            <p class="section-sub">Anime films &amp; theatrical releases</p>
+          </div>
+        </div>
+        <a class="see-all" onclick="navigateToPage('movies')">See all <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="anime-carousel" id="topMovies"></div>
+    </section>
+
+    <section class="content-section home-section" id="recommendationsSection" style="display:none">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-icon" style="background:#a78bfa"><i class="fas fa-star"></i></span>
+          <div>
+            <h2 class="section-title"><span id="recommendationsLabel">Recommended For You</span></h2>
+            <p class="section-sub">Based on your watch history</p>
+          </div>
+        </div>
+      </div>
+      <div class="anime-carousel" id="recommendationsCarousel"></div>
+    </section>
+
+    <section class="content-section" id="comingSoonSection" style="display:none">
+      <div class="section-header">
+        <h2><span class="section-accent" style="background:var(--teal)"></span> Coming Soon</h2>
+      </div>
+      <div class="anime-carousel" id="comingSoonCarousel"></div>
+    </section>
+
+    <div class="shortcut-hint" id="shortcutHint" style="display:none">
+      <i class="fas fa-keyboard"></i>
+      <span><kbd>R</kbd> Random · <kbd>N</kbd> Next ep · <kbd>P</kbd> Prev ep · <kbd>F</kbd> Filter · <kbd>H</kbd> Home · <kbd>Esc</kbd> Close</span>
+    </div>
+  </div>
+
+  <!-- ═══ WATCH ═══ -->
+  <div class="page" id="page-watch" style="display:none">
+    <div class="wc-shell" id="wcShell">
+
+      <!-- ════ LEFT INFO PANEL (AnimeKai style) ════ -->
+      <div class="wc-info-panel" id="wcInfoPanel">
+        <img class="wc-info-cover" id="wcInfoCover" src="" alt="" />
+        <div class="wc-info-meta" id="wcInfoMeta">
+          <!-- Populated by player.js -->
+        </div>
+      </div>
+
+      <!-- ════ MAIN COLUMN ════ -->
+      <div class="wc-main" id="wcMain">
+
+        <!-- Breadcrumb -->
+        <div class="wc-topbar">
+          <div class="wc-breadcrumb">
+            <span onclick="navigateToPage('home')"><i class="fas fa-home"></i> Home</span>
+            <i class="fas fa-chevron-right"></i>
+            <span id="breadcrumbAnime"></span>
+            <i class="fas fa-chevron-right"></i>
+            <span id="breadcrumbEpisode"></span>
+          </div>
+          <button class="wc-sidebar-toggle-btn" id="wcSidebarToggleBtn" onclick="toggleWatchSidebar()" title="Show / Hide Episode List">
+            <i class="fas fa-list-ol" id="wcSidebarIcon"></i>
+            <span id="wcSidebarLabel">Episodes</span>
+            <i class="fas fa-chevron-right wc-toggle-arrow" id="wcSidebarArrow"></i>
+          </button>
+        </div>
+
+        <!-- Title bar -->
+        <div class="wc-titlebar">
+          <div class="wc-titlebar-left">
+            <h2 class="wc-title" id="watchAnimeTitle">Anime Title</h2>
+            <div class="wc-title-sub">
+              <span class="wc-ep-chip" id="watchEpisodeName">Episode</span>
+              <span class="wc-live-dot" id="watchingNowCounter"></span>
+            </div>
+          </div>
+          <div class="wc-titlebar-right">
+            <div class="wc-track-pills">
+              <button class="wc-pill active" id="subBtn"><i class="fas fa-closed-captioning"></i> SUB</button>
+              <button class="wc-pill" id="dubBtn"><i class="fas fa-volume-up"></i> DUB</button>
+            </div>
+            <button class="wc-ctrl-btn" id="theatreBtn" onclick="toggleTheatreMode()" title="Theatre Mode">
+              <i class="fas fa-expand-alt"></i>
+            </button>
+            <button class="wc-ctrl-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen">
+              <i class="fas fa-expand"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Season tabs -->
+        <div id="seasonSelectorSlot"></div>
+
+        <!-- VIDEO -->
+        <div class="wc-player-wrap" id="wcPlayerWrap">
+          <div class="wc-iframe-box">
+            <iframe id="videoIframe" src="" frameborder="0" allowfullscreen
+              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
+          </div>
+          <!-- Hover: prev/next over video -->
+          <div class="wc-ep-hover">
+            <button class="wc-ep-hover-btn" onclick="navigateEpisode(-1)">
+              <i class="fas fa-step-backward"></i> Prev
+            </button>
+            <span class="wc-ep-hover-name" id="vobEpName"></span>
+            <button class="wc-ep-hover-btn wc-ep-hover-next" onclick="navigateEpisode(1)">
+              Next <i class="fas fa-step-forward"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- NAV + PROGRESS + ACTIONS -->
+        <div class="wc-actions-bar">
+          <div class="wc-actions-left">
+            <button class="wc-btn" id="prevEpBtn" onclick="navigateEpisode(-1)">
+              <i class="fas fa-step-backward"></i> Prev
+            </button>
+            <button class="wc-btn wc-btn-primary" id="nextEpBtn" onclick="navigateEpisode(1)">
+              Next <i class="fas fa-step-forward"></i>
+            </button>
+            <div class="wc-progress">
+              <div class="wc-progress-bar">
+                <div class="wc-progress-fill" id="watchProgressBar" style="width:0%"></div>
+              </div>
+              <span class="wc-progress-pct" id="watchProgressLabel">0%</span>
+            </div>
+          </div>
+          <div class="wc-actions-right">
+            <button class="wc-btn wc-btn-toggle" id="autoPlayBtn">
+              <i class="fas fa-play-circle"></i> Auto Play
+            </button>
+            <button class="wc-btn wc-btn-toggle" id="autoNextBtn">
+              <i class="fas fa-step-forward"></i> Auto Next
+            </button>
+            <button class="wc-btn" id="downloadBtn" title="Download">
+              <i class="fas fa-download"></i>
+            </button>
+            <button class="wc-btn" onclick="startWatchParty()" title="Watch Party">
+              <i class="fas fa-users"></i>
+            </button>
+            <button class="wc-btn wc-btn-skip" id="skipIntroBtn" style="display:none" onclick="triggerSkipIntro()">
+              <i class="fas fa-forward"></i> Skip Intro
+            </button>
+            <button class="wc-btn wc-btn-ghost" id="setIntroBtn" onclick="promptSetIntro()" title="Set Skip Point">
+              <i class="fas fa-scissors"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- SERVERS — prominent separate section -->
+        <div class="wc-servers-section">
+          <div class="wc-servers-hdr">
+            <i class="fas fa-server"></i>
+            <span>Servers</span>
+            <span class="wc-servers-hint">Switch if video doesn't load</span>
+          </div>
+          <div class="wc-servers-list" id="serverButtons"></div>
+        </div>
+
+        <!-- COMMENTS -->
+        <section id="commentsSection" class="wc-below-card" style="display:none">
+          <div class="wc-below-hdr">
+            <i class="fas fa-comments"></i>
+            <span>Comments</span>
+            <span class="wc-badge" id="commentsCount">0</span>
+          </div>
+          <div class="wc-below-body">
+            <form class="comment-form" id="commentForm">
+              <div class="comment-input-row">
+                <div class="comment-input-avatar" id="commentInputAvatar">?</div>
+                <input type="text" class="comment-input" id="commentInput"
+                  placeholder="Write a comment..." maxlength="500" autocomplete="off" />
+                <button type="submit" class="comment-submit-btn">
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
+            </form>
+            <div class="comments-list" id="commentsList"></div>
+          </div>
+        </section>
+
+        <!-- MORE LIKE THIS -->
+        <section id="moreLikeThisSection" class="wc-below-card" style="display:none">
+          <div class="wc-below-hdr">
+            <i class="fas fa-film"></i>
+            <span>More Like This</span>
+          </div>
+          <div class="wc-below-body">
+            <div class="anime-carousel" id="moreLikeThisGrid"></div>
+          </div>
+        </section>
+
+      </div><!-- /.wc-main -->
+
+      <!-- ════ SIDEBAR: Episodes + Seasons ════ -->
+      <div class="wc-sidebar" id="wcSidebar">
+
+        <!-- Sidebar header with tabs -->
+        <div class="wc-sidebar-hdr">
+          <button class="wc-stab active" id="stab-eps" onclick="switchWatchTab('eps')">
+            <i class="fas fa-list-ol"></i> Episodes
+            <span class="wc-stab-count" id="epCount"></span>
+          </button>
+          <button class="wc-stab" id="stab-seasons" onclick="switchWatchTab('seasons')">
+            <i class="fas fa-layer-group"></i> Seasons
+          </button>
+          <!-- Close button inside sidebar header -->
+          <button class="wc-sidebar-close" onclick="toggleWatchSidebar()" title="Hide sidebar">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Episodes panel -->
+        <div class="wc-stab-panel" id="stab-panel-eps">
+          <div class="wc-episodes-list" id="episodesList"></div>
+        </div>
+
+        <!-- Seasons panel -->
+        <div class="wc-stab-panel" id="stab-panel-seasons" style="display:none">
+          <div id="watchSeasonsList"></div>
+        </div>
+
+      </div><!-- /.wc-sidebar -->
+
+    </div><!-- /.wc-shell -->
+  </div>
+
+  <!-- ═══ LOGIN ═══ -->
+  <div class="page" id="page-login" style="display:none">
+    <div class="auth-shell">
+
+      <!-- LEFT: Branding panel -->
+      <div class="auth-brand-panel">
+        <div class="auth-brand-inner">
+          <div class="auth-brand-logo">
+            <span class="brand-logo xl">AW</span>
+            <h1>ANIME<span>WATCH</span></h1>
+          </div>
+          <p class="auth-brand-tagline">Your gateway to the anime universe.<br/>Sub · Dub · HD — all free.</p>
+          <div class="auth-brand-features">
+            <div class="auth-feature"><i class="fas fa-play-circle"></i><span>Stream in HD</span></div>
+            <div class="auth-feature"><i class="fas fa-closed-captioning"></i><span>Sub &amp; Dub</span></div>
+            <div class="auth-feature"><i class="fas fa-heart"></i><span>Build your list</span></div>
+            <div class="auth-feature"><i class="fas fa-history"></i><span>Track progress</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Form panel -->
+      <div class="auth-form-panel">
+        <div class="auth-card">
+          <!-- Tab toggle -->
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="showLoginBtn">Sign In</button>
+            <button class="auth-tab" id="showSignupBtn">Create Account</button>
+          </div>
+
+          <!-- Login Form -->
+          <form class="auth-form" id="loginForm">
+            <div class="form-group">
+              <label><i class="fas fa-user"></i> Username or Email</label>
+              <input type="text" id="loginUsername" placeholder="Enter username or email" autocomplete="username" required />
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-lock"></i> Password</label>
+              <div class="input-wrapper">
+                <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password" required />
+                <button type="button" class="toggle-pw" onclick="togglePassword('loginPassword',this)"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
+            <div class="error-message" id="loginError"></div>
+            <button type="submit" class="auth-submit-btn"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+            <div class="auth-divider"><span>or</span></div>
+            <button type="button" class="auth-demo-btn" onclick="demoLogin()">
+              <i class="fas fa-bolt"></i> Try Demo Account
+            </button>
+            <p class="auth-hint">Demo credentials: <code>demo</code> / <code>demo123</code></p>
+          </form>
+
+          <!-- Signup Form -->
+          <form class="auth-form" id="signupForm" style="display:none">
+            <div class="form-group">
+              <label><i class="fas fa-user"></i> Username</label>
+              <input type="text" id="signupUsername" placeholder="Choose a username" autocomplete="username" required />
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-envelope"></i> Email</label>
+              <input type="email" id="signupEmail" placeholder="your@email.com" autocomplete="email" required />
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-lock"></i> Password</label>
+              <div class="input-wrapper">
+                <input type="password" id="signupPassword" placeholder="Minimum 6 characters" autocomplete="new-password" required />
+                <button type="button" class="toggle-pw" onclick="togglePassword('signupPassword',this)"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-lock"></i> Confirm Password</label>
+              <div class="input-wrapper">
+                <input type="password" id="signupConfirmPassword" placeholder="Repeat password" autocomplete="new-password" required />
+                <button type="button" class="toggle-pw" onclick="togglePassword('signupConfirmPassword',this)"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
+            <div class="error-message" id="signupError"></div>
+            <button type="submit" class="auth-submit-btn"><i class="fas fa-user-plus"></i> Create Account</button>
+          </form>
+
+          <p class="auth-back"><button onclick="navigateToPage('home')" class="auth-back-btn"><i class="fas fa-arrow-left"></i> Back to Home</button></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ MOVIES ═══ -->
+  <div class="page" id="page-movies" style="display:none">
+    <div class="page-container">
+      <div class="page-hero-bar"><div><h2 class="page-title"><i class="fas fa-film"></i> Movies</h2><p class="page-sub">Anime films and theatrical releases</p></div><div class="filter-bar" id="moviesFilter"></div></div>
+      <div class="anime-grid" id="moviesGrid"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SERIES ═══ -->
+  <div class="page" id="page-series" style="display:none">
+    <div class="page-container">
+      <div class="page-hero-bar"><div><h2 class="page-title"><i class="fas fa-tv"></i> Series</h2><p class="page-sub">Ongoing and completed anime series</p></div><div class="filter-bar" id="seriesFilter"></div></div>
+      <div class="anime-grid" id="seriesGrid"></div>
+    </div>
+  </div>
+
+  <!-- ═══ FILTER PAGE ═══ -->
+  <div class="page" id="page-filter" style="display:none">
+    <div class="page-container">
+      <div class="page-hero-bar"><div><h2 class="page-title"><i class="fas fa-filter"></i> Filter</h2><p class="page-sub">Find exactly what you want</p></div></div>
+      <div class="filter-panel">
+        <div class="fp-row"><div class="fp-label">Type</div><div class="fp-options"><button class="fp-type-btn active" data-value="all">All</button><button class="fp-type-btn" data-value="series">Series</button><button class="fp-type-btn" data-value="movie">Movie</button></div></div>
+        <div class="fp-row"><div class="fp-label">Status</div><div class="fp-options"><button class="fp-status-btn active" data-value="all">All</button><button class="fp-status-btn" data-value="completed">Completed</button><button class="fp-status-btn" data-value="ongoing">Ongoing</button></div></div>
+        <div class="fp-row"><div class="fp-label">Sort By</div><div class="fp-options"><select class="fp-select" id="fpSort"><option value="default">Default</option><option value="az">A → Z</option><option value="za">Z → A</option><option value="score">Top Rated</option></select></div></div>
+        <div class="fp-row fp-genres-row"><div class="fp-label">Genres</div><div class="fp-genre-tags" id="fpGenres"></div></div>
+        <div class="fp-actions">
+          <button class="btn-primary" id="applyFilterBtn" style="width:auto;padding:0.7rem 2rem"><i class="fas fa-filter"></i> Filter</button>
+          <button class="btn-outline" id="resetFilterBtn"><i class="fas fa-redo"></i> Reset</button>
+        </div>
+      </div>
+      <div class="filter-results-header"><h3>Results</h3><span class="filter-result-count" id="filterResultCount">0 results</span></div>
+      <div class="anime-grid" id="filterResultsGrid"></div>
+    </div>
+  </div>
+
+  <!-- ═══ MY LIST ═══ -->
+  <div class="page" id="page-mylist" style="display:none">
+    <div class="page-container">
+      <div class="page-hero-bar"><div><h2 class="page-title"><i class="fas fa-heart"></i> My List</h2><p class="page-sub">Your saved anime</p></div></div>
+      <div class="anime-grid" id="mylistGrid"></div>
+    </div>
+  </div>
+
+  <!-- ═══ HISTORY ═══ -->
+  <div class="page" id="page-history" style="display:none">
+    <div class="page-container">
+      <div class="page-hero-bar"><div><h2 class="page-title"><i class="fas fa-history"></i> Watch History</h2><p class="page-sub">Pick up where you left off</p></div><button class="btn-outline" onclick="clearHistory()"><i class="fas fa-trash"></i> Clear All</button></div>
+      <div class="anime-grid" id="historyGrid"><div class="empty-state"><i class="fas fa-film"></i><p>No watch history yet.</p></div></div>
+    </div>
+  </div>
+
+  <!-- ═══ SETTINGS ═══ -->
+  <div class="page" id="page-settings" style="display:none">
+    <div class="page-container">
+      <div id="settingsPageContent"></div>
+    </div>
+  </div>
+
+  <!-- ═══ DEVELOPER ═══ -->
+  <div class="page" id="page-developer" style="display:none">
+    <div class="page-container">
+      <div class="developer-card">
+        <div class="dev-header">
+          <div class="developer-avatar"><span>R</span><div class="dev-status"></div></div>
+          <div class="dev-title"><h2>Raghav</h2><span class="dev-role"><i class="fas fa-code"></i> Full-Stack Developer</span></div>
+        </div>
+        <p class="dev-bio">Welcome to the Anime Watch
+
+Anime is more than just entertainment — it is a world full of powerful stories, unforgettable characters, emotions, action, friendship, dreams, and imagination. From intense battles to heart-touching moments, every anime brings a different journey for fans.
+
+This website is made for anime lovers who enjoy exploring amazing series, discovering new stories, and connecting with characters that inspire them. Whether it is action, adventure, fantasy, romance, comedy, or mystery, anime has something special for everyone.
+
+Here, every anime has its own vibe, story, and emotion — making this place a small universe for true anime fans.
+
+Anime is not just watched, it is felt.</p>
+        <div class="dev-projects">
+          <div class="dev-project-item"><i class="fas fa-play-circle"></i> AnimeWatch — Streaming Platform</div>
+          <div class="dev-project-item"><i class="fas fa-images"></i> Wallpaper Hub — HD Wallpapers</div>
+        </div>
+        <div class="tech-stack"><h3>Tech Stack</h3><div class="tech-tags"><span class="tech-tag"><i class="fab fa-html5"></i> HTML5</span><span class="tech-tag"><i class="fab fa-css3-alt"></i> CSS3</span><span class="tech-tag"><i class="fab fa-js"></i> JavaScript</span><span class="tech-tag"><i class="fas fa-layer-group"></i> SPA</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROFILE ═══ -->
+  <div class="page" id="page-profile" style="display:none">
+    <div class="page-container"><div id="profilePageContent"></div></div>
+  </div>
+
+  <!-- Avatar Picker Modal -->
+  <div class="anime-modal" id="avatarPickerModal" style="display:none">
+    <div class="modal-backdrop" onclick="closeAvatarPicker()"></div>
+    <div class="modal-card" style="max-width:580px">
+      <button class="modal-close" onclick="closeAvatarPicker()"><i class="fas fa-times"></i></button>
+      <div style="padding:1.75rem">
+        <h3 style="font-family:var(--font-display);font-size:1.8rem;letter-spacing:2px;margin-bottom:0.25rem"><i class="fas fa-user-circle" style="color:var(--accent)"></i> CHOOSE AVATAR</h3>
+        <p style="color:var(--text3);font-size:0.85rem;margin-bottom:1.5rem">Select your anime character — click to equip</p>
+        <div class="avatar-picker-grid" id="avatarGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MINIPLAYER ═══ -->
+  <div class="mini-player" id="miniPlayer" style="display:none">
+    <div class="mp-video">
+      <iframe id="miniPlayerIframe" src="" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+    </div>
+    <div class="mp-controls">
+      <div class="mp-info">
+        <div class="mp-title" id="miniPlayerTitle"></div>
+        <div class="mp-ep" id="miniPlayerEp"></div>
+      </div>
+      <div class="mp-btns">
+        <button class="mp-btn" onclick="miniPlayerReturn()" title="Return to watch page"><i class="fas fa-expand"></i></button>
+        <button class="mp-btn close" onclick="hideMiniPlayer()" title="Close miniplayer"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Mobile Nav -->
+  <nav class="bottom-nav" id="bottomNav">
+    <div class="bottom-nav-item" data-page="home"><i class="fas fa-home"></i><span>Home</span></div>
+    <div class="bottom-nav-item" data-page="filter"><i class="fas fa-search"></i><span>Browse</span></div>
+    <div class="bottom-nav-item" data-page="mylist"><i class="fas fa-heart"></i><span>My List</span></div>
+    <div class="bottom-nav-item" data-page="settings"><i class="fas fa-cog"></i><span>Settings</span></div>
+    <div class="bottom-nav-item" data-page="profile"><i class="fas fa-user"></i><span>Profile</span></div>
+  </nav>
+
+  <script src="data.js"></script>
+  <script src="slideshow_data.js"></script>
+  <script src="auth.js"></script>
+  <script src="slideshow.js"></script>
+  <script src="player.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
